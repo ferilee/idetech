@@ -1,26 +1,34 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { fetchTenantBootstrap, type TenantBootstrap } from "@/lib/api";
+import { detectTenantSlug } from "@/lib/tenant";
 
 export function TenantBootstrapForm() {
-  const [slug, setSlug] = useState("demo");
+  const [slug, setSlug] = useState("");
   const [result, setResult] = useState<TenantBootstrap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    const nextSlug = detectTenantSlug();
+    setSlug(nextSlug);
+    void handleRefresh(nextSlug);
+  }, []);
+
+  function handleRefresh(nextSlug = slug) {
     setError(null);
 
     startTransition(async () => {
       try {
-        const payload = await fetchTenantBootstrap(slug);
+        const payload = await fetchTenantBootstrap(nextSlug);
         setResult(payload);
       } catch (submitError) {
         setResult(null);
-        setError(submitError instanceof Error ? submitError.message : "request failed");
+        setError(
+          submitError instanceof Error ? submitError.message : "request failed",
+        );
       }
     });
   }
@@ -29,26 +37,22 @@ export function TenantBootstrapForm() {
     <div className="panel hero-side bootstrap-card">
       <h2>Tenant Bootstrap</h2>
       <p>
-        Gunakan slug tenant untuk mengambil konfigurasi awal sebelum login. Default seed backend
-        saat ini adalah <strong>demo</strong>.
+        Tenant dibaca otomatis dari host aplikasi. Untuk development tanpa
+        subdomain, fallback lokal tetap memakai tenant <strong>demo</strong>.
       </p>
 
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="tenant-slug">
-          Slug tenant
-          <input
-            id="tenant-slug"
-            name="tenant-slug"
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-            placeholder="mis. smpn1punggur"
-          />
-        </label>
+      <div className="tenant-result">
+        <strong>Tenant terdeteksi</strong>
+        <div>Slug: {slug || "-"}</div>
+      </div>
 
-        <button type="submit" disabled={isPending}>
-          {isPending ? "Memuat..." : "Ambil konfigurasi tenant"}
-        </button>
-      </form>
+      <button
+        type="button"
+        onClick={() => handleRefresh()}
+        disabled={isPending}
+      >
+        {isPending ? "Memuat..." : "Refresh bootstrap tenant"}
+      </button>
 
       {error ? <div className="tenant-result">Error: {error}</div> : null}
 

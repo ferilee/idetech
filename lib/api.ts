@@ -41,6 +41,10 @@ export type MeResponse = {
   user: LoginResponse["user"];
 };
 
+export type UsersResponse = {
+  users: LoginResponse["user"][];
+};
+
 const apiBaseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
@@ -69,6 +73,7 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "X-Tenant-Slug": payload.tenant_slug,
     },
     body: JSON.stringify(payload),
   });
@@ -99,4 +104,22 @@ export async function fetchCurrentUser(token: string): Promise<MeResponse> {
   }
 
   return (await response.json()) as MeResponse;
+}
+
+export async function fetchUsers(token: string): Promise<UsersResponse> {
+  const response = await fetch(`${apiBaseURL}/api/v1/users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const responsePayload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(responsePayload?.error ?? "failed to fetch users");
+  }
+
+  return (await response.json()) as UsersResponse;
 }

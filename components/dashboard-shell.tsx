@@ -3,31 +3,42 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { fetchCurrentUser, type MeResponse } from "@/lib/api";
-import { clearSession, readAccessToken, readSession, type StoredSession } from "@/lib/session";
+import {
+  fetchCurrentUser,
+  fetchUsers,
+  type MeResponse,
+  type UsersResponse,
+} from "@/lib/api";
+import {
+  clearSession,
+  readAccessToken,
+  readSession,
+  type StoredSession,
+} from "@/lib/session";
 
 const roleContent: Record<string, { title: string; body: string }> = {
   admin: {
     title: "Dashboard Admin Tenant",
-    body: "Kelola tenant, pengguna, dan konfigurasi visual sekolah dari satu tempat."
+    body: "Kelola tenant, pengguna, dan konfigurasi visual sekolah dari satu tempat.",
   },
   teacher: {
     title: "Dashboard Guru",
-    body: "Lanjutkan ke IdeStudio, susun materi, dan siapkan kuis adaptif untuk kelas."
+    body: "Lanjutkan ke IdeStudio, susun materi, dan siapkan kuis adaptif untuk kelas.",
   },
   student: {
     title: "Dashboard Siswa",
-    body: "Lanjutkan quest, lihat progres belajar, dan buka jalur pengayaan atau remedial."
+    body: "Lanjutkan quest, lihat progres belajar, dan buka jalur pengayaan atau remedial.",
   },
   parent: {
     title: "Dashboard Orang Tua",
-    body: "Pantau progres belajar anak dan tindak lanjut yang direkomendasikan sistem."
-  }
+    body: "Pantau progres belajar anak dan tindak lanjut yang direkomendasikan sistem.",
+  },
 };
 
 export function DashboardShell() {
   const [session, setSession] = useState<StoredSession | null>(null);
   const [me, setMe] = useState<MeResponse | null>(null);
+  const [users, setUsers] = useState<UsersResponse["users"]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,8 +52,11 @@ export function DashboardShell() {
 
     setSession(storedSession);
 
-    void fetchCurrentUser(token)
-      .then(setMe)
+    void Promise.all([fetchCurrentUser(token), fetchUsers(token)])
+      .then(([profile, directory]) => {
+        setMe(profile);
+        setUsers(directory.users);
+      })
       .catch(() => {
         clearSession();
         setError("Sesi tidak valid. Silakan login kembali.");
@@ -73,6 +87,36 @@ export function DashboardShell() {
           <div>Nama akun: {me.user.username}</div>
           <div>Email: {me.user.email}</div>
           <div>Role: {me.user.role}</div>
+        </div>
+      ) : null}
+
+      {role === "teacher" ? (
+        <div className="teacher-grid">
+          <div className="tenant-result">
+            <strong>IdeStudio</strong>
+            <div>
+              Mulai kelola materi, unggah file, dan siapkan konten pembelajaran.
+            </div>
+            <div>
+              Modul ini menjadi pintu masuk guru sebelum masuk ke IdeGen dan
+              quest.
+            </div>
+          </div>
+          <div className="tenant-result">
+            <strong>Quick Actions</strong>
+            <div>1. Mulai workspace materi baru</div>
+            <div>2. Susun bank materi kelas</div>
+            <div>3. Siapkan draft kuis adaptif</div>
+          </div>
+          <div className="tenant-result">
+            <strong>Kolaborator Tenant</strong>
+            <div>{users.length} pengguna aktif tersedia di tenant ini.</div>
+            {users.slice(0, 5).map((user) => (
+              <div key={user.id}>
+                {user.username} · {user.role}
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
 

@@ -10,6 +10,7 @@ import {
   type MeResponse,
 } from "@/lib/api";
 import { clearSession, readAccessToken, saveSession } from "@/lib/session";
+import { detectTenantSlug } from "@/lib/tenant";
 
 export function LoginForm() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    setTenantSlug(detectTenantSlug());
+
     const token = readAccessToken();
     if (!token) {
       return;
@@ -79,20 +82,17 @@ export function LoginForm() {
         <span className="eyebrow">Sign In</span>
         <h1>Masuk ke workspace IdeTech</h1>
         <p>
-          Auth awal menggunakan seed user demo dari backend. Kredensial default:
+          Tenant ditentukan dari host aplikasi. Auth awal menggunakan seed user
+          demo dari backend. Kredensial default:
           <strong> demo / guru.demo / demo123</strong>.
         </p>
       </div>
 
       <form className="auth-form" onSubmit={handleSubmit}>
-        <label htmlFor="tenant-slug">
-          Tenant
-          <input
-            id="tenant-slug"
-            value={tenantSlug}
-            onChange={(event) => setTenantSlug(event.target.value)}
-          />
-        </label>
+        <div className="tenant-result">
+          <strong>Tenant aktif</strong>
+          <div>Slug: {tenantSlug}</div>
+        </div>
 
         <label htmlFor="identity">
           Username atau email

@@ -245,6 +245,12 @@ main {
     align-items: center;
 }
 
+.teacher-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
 .dashboard-actions a,
 .dashboard-actions button {
     display: inline-flex;
@@ -292,5 +298,9 @@ main {
 
     .dashboard-actions {
         flex-direction: column;
+    }
+
+    .teacher-grid {
+        grid-template-columns: 1fr;
     }
 }
