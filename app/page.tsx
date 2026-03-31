@@ -3,16 +3,16 @@ import { TenantBootstrapForm } from "@/components/tenant-bootstrap-form";
 const sections = [
   {
     title: "API Go + Chi",
-    body: "Fondasi backend memuat route health check, tenant bootstrap, dan titik masuk untuk auth serta modul tenant-aware berikutnya."
+    body: "Fondasi backend memuat route health check, tenant bootstrap, dan titik masuk untuk auth serta modul tenant-aware berikutnya.",
   },
   {
     title: "UI Tenant-Aware",
-    body: "Frontend Next menyiapkan pengalaman login dan dashboard yang bisa berubah sesuai identitas tenant dan jenjang."
+    body: "Frontend Next menyiapkan pengalaman login dan dashboard yang bisa berubah sesuai identitas tenant dan jenjang.",
   },
   {
     title: "Data Layer",
-    body: "Migrasi awal PostgreSQL menurunkan entitas inti dari blueprint: tenant, user, material, quest, quiz, dan progress."
-  }
+    body: "Migrasi awal PostgreSQL menurunkan entitas inti dari blueprint: tenant, user, material, quest, quiz, dan progress.",
+  },
 ];
 
 export default function HomePage() {
@@ -24,9 +24,14 @@ export default function HomePage() {
             <span className="eyebrow">Blueprint to Product</span>
             <h1>IdeTech mulai dari fondasi tenant-aware yang rapi.</h1>
             <p>
-              Tahap awal ini menurunkan blueprint menjadi monorepo yang siap dikembangkan:
-              backend Go, frontend Next, migrasi PostgreSQL, dan alur bootstrap tenant untuk
-              konteks sekolah.
+              Tahap awal ini menurunkan blueprint menjadi monorepo yang siap
+              dikembangkan: backend Go, frontend Next, migrasi PostgreSQL, dan
+              alur bootstrap tenant untuk konteks sekolah.
+            </p>
+            <p>
+              Login flow awal sekarang tersedia di{" "}
+              <a href="/login">halaman login</a> dan sudah tersambung ke
+              endpoint JWT backend.
             </p>
 
             <div className="grid metrics">
