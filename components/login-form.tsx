@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
-import { fetchCurrentUser, login, type LoginResponse, type MeResponse } from "@/lib/api";
-
-const STORAGE_KEY = "idetech_access_token";
+import {
+  fetchCurrentUser,
+  login,
+  type LoginResponse,
+  type MeResponse,
+} from "@/lib/api";
+import { clearSession, readAccessToken, saveSession } from "@/lib/session";
 
 export function LoginForm() {
+  const router = useRouter();
   const [tenantSlug, setTenantSlug] = useState("demo");
   const [identity, setIdentity] = useState("guru.demo");
   const [password, setPassword] = useState("demo123");
@@ -16,15 +22,17 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const token = window.localStorage.getItem(STORAGE_KEY);
+    const token = readAccessToken();
     if (!token) {
       return;
     }
 
     void fetchCurrentUser(token)
-      .then(setMe)
+      .then((payload) => {
+        setMe(payload);
+      })
       .catch(() => {
-        window.localStorage.removeItem(STORAGE_KEY);
+        clearSession();
       });
   }, []);
 
@@ -37,21 +45,30 @@ export function LoginForm() {
         const nextSession = await login({
           tenant_slug: tenantSlug,
           identity,
-          password
+          password,
         });
-        window.localStorage.setItem(STORAGE_KEY, nextSession.access_token);
+        saveSession({
+          accessToken: nextSession.access_token,
+          role: nextSession.user.role,
+          username: nextSession.user.username,
+          tenantSlug: nextSession.user.tenant_slug,
+        });
         setSession(nextSession);
-        setMe(await fetchCurrentUser(nextSession.access_token));
+        const nextMe = await fetchCurrentUser(nextSession.access_token);
+        setMe(nextMe);
+        router.push("/dashboard");
       } catch (submitError) {
         setSession(null);
         setMe(null);
-        setError(submitError instanceof Error ? submitError.message : "login failed");
+        setError(
+          submitError instanceof Error ? submitError.message : "login failed",
+        );
       }
     });
   }
 
   function handleLogout() {
-    window.localStorage.removeItem(STORAGE_KEY);
+    clearSession();
     setSession(null);
     setMe(null);
   }

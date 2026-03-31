@@ -184,6 +184,13 @@ main {
     gap: 18px;
 }
 
+.dashboard-card {
+    width: min(760px, 100%);
+    padding: 32px;
+    display: grid;
+    gap: 18px;
+}
+
 .auth-header h1 {
     margin: 16px 0 10px;
     font-size: clamp(32px, 5vw, 52px);
@@ -232,6 +239,32 @@ main {
     background: linear-gradient(135deg, #0f172a, #334155);
 }
 
+.dashboard-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.dashboard-actions a,
+.dashboard-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    border: 0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.dashboard-actions button {
+    background: linear-gradient(135deg, #0f172a, #334155);
+}
+
 .sections-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -255,5 +288,9 @@ main {
     .sections-grid,
     .metrics {
         grid-template-columns: 1fr;
+    }
+
+    .dashboard-actions {
+        flex-direction: column;
     }
 }
