@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { TenantBootstrapForm } from "@/components/tenant-bootstrap-form";
 
 const sections = [
@@ -21,6 +22,21 @@ export default function HomePage() {
       <div className="shell">
         <section className="hero">
           <div className="panel hero-copy">
+            <div className="brand-mark">
+              <Image
+                src="/logo.png"
+                alt="IdeTech logo"
+                width={84}
+                height={84}
+                priority
+              />
+              <div>
+                <span className="brand-name">IdeTech</span>
+                <p className="brand-tagline">
+                  Platform belajar tenant-aware untuk konteks sekolah.
+                </p>
+              </div>
+            </div>
             <span className="eyebrow">Blueprint to Product</span>
             <h1>IdeTech mulai dari fondasi tenant-aware yang rapi.</h1>
             <p>

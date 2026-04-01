@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "IdeTech",
-  description: "Tenant-aware learning platform scaffold"
+  description: "Tenant-aware learning platform scaffold",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png"
+  }
 };
 
 export default function RootLayout({
