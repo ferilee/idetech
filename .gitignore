@@ -1,5 +1,33 @@
 .DS_Store
+
+# env files
+.env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Next.js / build outputs
 .next/
-node_modules/
 out/
+dist/
+coverage/
+.turbo/
+.vercel/
+
+# dependencies
+node_modules/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local databases / temp artifacts
+*.sqlite
+*.sqlite3
+*.db
+tmp/
