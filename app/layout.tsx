@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "IdeTech",
@@ -15,7 +16,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

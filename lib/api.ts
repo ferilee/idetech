@@ -22,6 +22,11 @@ export type LoginRequest = {
   password: string;
 };
 
+export type LoginGoogleRequest = {
+  tenant_slug: string;
+  id_token: string;
+};
+
 export type LoginResponse = {
   access_token: string;
   token_type: string;
@@ -45,7 +50,7 @@ export type UsersResponse = {
   users: LoginResponse["user"][];
 };
 
-const apiBaseURL = "";
+const apiBaseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 export async function fetchTenantBootstrap(
   slug: string,
@@ -82,6 +87,26 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
       error?: string;
     } | null;
     throw new Error(responsePayload?.error ?? "login failed");
+  }
+
+  return (await response.json()) as LoginResponse;
+}
+
+export async function loginGoogle(payload: LoginGoogleRequest): Promise<LoginResponse> {
+  const response = await fetch(`${apiBaseURL}/api/v1/auth/google`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Tenant-Slug": payload.tenant_slug,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const responsePayload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(responsePayload?.error ?? "google login failed");
   }
 
   return (await response.json()) as LoginResponse;

@@ -2,8 +2,8 @@ import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
   return (
-    <main className="home login-page">
-      <div className="shell home-shell login-shell">
+    <main className="login-splash-wrapper">
+      <div className="login-splash-container">
         <LoginForm />
       </div>
     </main>

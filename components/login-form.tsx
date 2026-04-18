@@ -1,215 +1,127 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
-import {
-  fetchCurrentUser,
-  login,
-  type LoginResponse,
-  type MeResponse,
-} from "@/lib/api";
-import { clearSession, readAccessToken, saveSession } from "@/lib/session";
-import { detectTenantSlug } from "@/lib/tenant";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
 
 export function LoginForm() {
   const router = useRouter();
-  const [tenantSlug, setTenantSlug] = useState("demo");
-  const [identity, setIdentity] = useState("guru.demo");
-  const [password, setPassword] = useState("demo123");
-  const [roleMode, setRoleMode] = useState("Guru");
-  const [gradeLevel, setGradeLevel] = useState("SMA");
-  const [identityTouched, setIdentityTouched] = useState(false);
-  const [session, setSession] = useState<LoginResponse | null>(null);
-  const [me, setMe] = useState<MeResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setTenantSlug(detectTenantSlug());
-
-    const token = readAccessToken();
-    if (!token) {
-      return;
-    }
-
-    void fetchCurrentUser(token)
-      .then((payload) => {
-        setMe(payload);
-      })
-      .catch(() => {
-        clearSession();
-      });
-  }, []);
-
-  useEffect(() => {
-    if (identityTouched) {
-      return;
-    }
-
-    if (roleMode === "Guru") {
-      setIdentity("guru.demo");
-      setPassword("demo123");
-      return;
-    }
-
-    if (roleMode === "Siswa") {
-      setIdentity("siswa.demo");
-      setPassword("demo123");
-      return;
-    }
-
-    if (roleMode === "Orang Tua") {
-      setIdentity("");
-      setPassword("");
-    }
-  }, [identityTouched, roleMode]);
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleGoogleLogin = () => {
     setError(null);
-
     startTransition(async () => {
-      try {
-        const nextSession = await login({
-          tenant_slug: tenantSlug,
-          identity,
-          password,
-        });
-        saveSession({
-          accessToken: nextSession.access_token,
-          role: nextSession.user.role,
-          username: nextSession.user.username,
-          tenantSlug: nextSession.user.tenant_slug,
-        });
-        setSession(nextSession);
-        const nextMe = await fetchCurrentUser(nextSession.access_token);
-        setMe(nextMe);
+      await signIn("google", { callbackUrl: "/dashboard" });
+    });
+  };
+
+  const handleCredentialsLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        setError("Kredensial tidak valid. Silakan coba lagi.");
+      } else {
         router.push("/dashboard");
-      } catch (submitError) {
-        setSession(null);
-        setMe(null);
-        setError(
-          submitError instanceof Error ? submitError.message : "login failed",
-        );
       }
     });
-  }
-
-  function handleLogout() {
-    clearSession();
-    setSession(null);
-    setMe(null);
-  }
+  };
 
   return (
-    <div className="panel auth-card login-card">
-      <div className="auth-header">
-        <span className="eyebrow">Sign In</span>
-        <h1>Masuk ke IdeTech sesuai peranmu.</h1>
-        <p>
-          Login tetap menggunakan kredensial backend. Di bawah ini kamu bisa
-          memilih mode tampilan untuk melihat perbedaan UI antarmuka peran dan
-          jenjang.
-        </p>
+    <div className="login-splash-content">
+      <div className="login-brand">
+        <Image src="/logo.png" alt="IdeTech logo" width={80} height={80} />
+      </div>
+      
+      <div className="login-splash-header">
+        <h2>Selamat Datang Kembali</h2>
+        <p>Masuk ke akun IdeTech Anda untuk melanjutkan petualangan belajar.</p>
       </div>
 
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <div className="tenant-result">
-          <strong>Tenant aktif</strong>
-          <div>Slug: {tenantSlug}</div>
-          <div>
-            Kredensial demo: demo / guru.demo / demo123, siswa.demo / demo123
+      <div className="login-actions">
+        {/* Form Login Kredensial */}
+        <form onSubmit={handleCredentialsLogin} className="credentials-form">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input 
+              id="username"
+              type="text" 
+              placeholder="Username" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isPending}
+              required
+            />
           </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input 
+              id="password"
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isPending}
+              required
+            />
+          </div>
+          
+          {error && <p className="login-error-msg">{error}</p>}
+          
+          <button 
+            type="submit" 
+            className="login-submit-btn" 
+            disabled={isPending}
+          >
+            {isPending ? "Memproses..." : "Masuk"}
+          </button>
+        </form>
+
+        <div className="login-divider">
+          <span>atau</span>
         </div>
 
-        <div className="role-picker">
-          <label htmlFor="roleMode">
-            Mode peran
-            <select
-              id="roleMode"
-              value={roleMode}
-              onChange={(event) => setRoleMode(event.target.value)}
-            >
-              <option>Guru</option>
-              <option>Siswa</option>
-              <option>Orang Tua</option>
-            </select>
-          </label>
-          <label htmlFor="gradeLevel">
-            Jenjang (untuk siswa)
-            <select
-              id="gradeLevel"
-              value={gradeLevel}
-              onChange={(event) => setGradeLevel(event.target.value)}
-            >
-              <option>SD</option>
-              <option>SMP</option>
-              <option>SMA</option>
-              <option>Umum</option>
-            </select>
-          </label>
-        </div>
-
-        <label htmlFor="identity">
-          Username atau email
-          <input
-            id="identity"
-            value={identity}
-            onChange={(event) => {
-              setIdentity(event.target.value);
-              setIdentityTouched(true);
-            }}
-          />
-        </label>
-
-        <label htmlFor="password">
-          Password
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </label>
-
-        <button type="submit" disabled={isPending}>
-          {isPending ? "Memproses..." : "Login"}
+        <button 
+          className="google-login-btn" 
+          onClick={handleGoogleLogin}
+          disabled={isPending}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
+          </svg>
+          {isPending ? "Menghubungkan..." : "Masuk dengan Google"}
         </button>
 
-        <div className="mode-preview">
-          <strong>Preview mode</strong>
-          <p>
-            Tampilan akan menyesuaikan peran <span>{roleMode}</span>
-            {roleMode === "Siswa" ? ` (${gradeLevel})` : ""}. Saat berhasil
-            login, peran asli akun tetap diambil dari backend.
-          </p>
-        </div>
-      </form>
-
-      {error ? <div className="tenant-result">Error: {error}</div> : null}
-
-      {session ? (
-        <div className="tenant-result">
-          <strong>Login berhasil</strong>
-          <div>Tenant: {session.tenant.name}</div>
-          <div>Role: {session.user.role}</div>
-          <div>Token type: {session.token_type}</div>
-          <div>Expires in: {session.expires_in}s</div>
-        </div>
-      ) : null}
-
-      {me ? (
-        <div className="tenant-result">
-          <strong>Current user</strong>
-          <div>Username: {me.user.username}</div>
-          <div>Email: {me.user.email}</div>
-          <div>Role: {me.user.role}</div>
-          <button type="button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      ) : null}
+        <p className="login-footer-text">
+          Belum punya akun? <a href="#">Daftar sekarang</a>
+        </p>
+      </div>
     </div>
   );
 }

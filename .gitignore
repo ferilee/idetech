@@ -1,33 +1,51 @@
-.DS_Store
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# env files
+# Testing
+/coverage
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Env files (Very Important)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.local.sample
 !.env.example
 
-# Next.js / build outputs
-.next/
-out/
-dist/
-coverage/
-.turbo/
-.vercel/
+# Vercel
+.vercel
 
-# dependencies
-node_modules/
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# logs
-*.log
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# local databases / temp artifacts
-*.sqlite
-*.sqlite3
-*.db
-tmp/
+# OS Files
+Thumbs.db
+desktop.ini
